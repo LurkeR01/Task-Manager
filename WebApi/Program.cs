@@ -1,4 +1,7 @@
+using Application;
+using Application.Services;
 using Infrastructure;
+using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +11,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         builder.Configuration.GetConnectionString("DefaultConnection"),
         b => b.MigrationsAssembly("WebApi"))
 );
+
+builder.Services.AddScoped<ITasksRepository, TasksRepository>();
+builder.Services.AddScoped<TasksService>();
 
 builder.Services.AddOpenApi();
 
