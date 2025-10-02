@@ -2,6 +2,7 @@ using Application.Services;
 using Domain;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using WebApi.DTOs;
 
 namespace WebApi.Controllers
 {
@@ -17,23 +18,49 @@ namespace WebApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IEnumerable<TaskItem>> GetAsync() => await _service.GetAllAsync();
+        public async Task<IActionResult> GetAsync() => Ok(await _service.GetAllAsync());
 
         [HttpGet("{id}")]
-        public async Task<TaskItem> GetAsync(Guid id) => await _service.GetByIdAsync(id);
+        public async Task<IActionResult> GetAsync(Guid id) {
+             var task = await _service.GetByIdAsync(id);
+             if (task == null) return NotFound();
+             
+             return Ok(task);
+        }
         
         [HttpPost]
-        public async Task<IActionResult> AddAsync(string title, string description, DateTime dueDate)
+        public async Task<IActionResult> AddAsync([FromBody] CreateTaskDto dto)
         {
-            await _service.AddAsync(title,  description, dueDate);
+            await _service.AddAsync(dto.Title, dto.Description, dto.DueDate);
             return Ok();
         }
 
         [HttpPatch("{id}")]
-        public async Task<IActionResult> UpdateAsync(Guid id, string title, string description, DateTime dueDate, bool isDone)
+        public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] UpdateTaskDto dto)
         {
-            await _service.UpdateAsync(id, title, description, dueDate, isDone);
-            return Ok();
+            try
+            {
+                await _service.UpdateAsync(id, dto.Title, dto.Description, dto.DueDate, dto.IsDone);
+                return Ok();
+            }
+            catch (ArgumentException)
+            {
+                return NotFound();
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteAsync(Guid id)
+        {
+            try
+            {
+                await _service.DeleteAsync(id);
+                return Ok();
+            }
+            catch (ArgumentException)
+            {
+                return NotFound();
+            }
         }
     }
 }

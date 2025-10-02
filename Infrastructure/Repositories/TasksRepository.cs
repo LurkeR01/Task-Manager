@@ -24,7 +24,7 @@ public class TasksRepository : ITasksRepository
     {
         return await _dbContext.TaskItems
             .AsNoTracking()
-            .FirstOrDefaultAsync(t => t.Id == id) ?? throw new KeyNotFoundException();
+            .FirstOrDefaultAsync(t => t.Id == id);
     }
 
     public async Task AddAsync(TaskItem newTask) {

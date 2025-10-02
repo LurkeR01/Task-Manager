@@ -1,6 +1,19 @@
 @WebApi_HostAddress = http://localhost:5145
 
-GET {{WebApi_HostAddress}}/weatherforecast/
+POST http://localhost:5145/api/tasks
+Content-Type: application/json
+
+{
+  "title": "Сделать проект",
+  "description": "Закончить сервисы и контроллеры",
+  "dueDate": "2025-10-10"
+}
+
+###
+
+GET http://localhost:5145/api/tasks
 Accept: application/json
 
 ###
+
+DELETE http://localhost:5145/api/Tasks/b4dfbf72-f4ad-4f40-a24d-efff18811818
