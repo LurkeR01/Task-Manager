@@ -1,6 +1,7 @@
 using Application;
 using Application.Services;
 using Infrastructure;
+using Infrastructure.Persistence;
 using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
