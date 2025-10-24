@@ -1,5 +1,6 @@
 using Application.Services;
 using Domain;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.DTOs;
@@ -61,6 +62,13 @@ namespace WebApi.Controllers
             {
                 return NotFound();
             }
+        }
+        
+        [Authorize]
+        [HttpGet("me")]
+        public IActionResult GetMe()
+        {
+            return Ok(User.Identity.Name);
         }
     }
 }

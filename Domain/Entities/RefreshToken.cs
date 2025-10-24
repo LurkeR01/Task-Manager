@@ -2,7 +2,7 @@
 
 public class RefreshToken
 {
-    public Guid Id { get; set; }
+    public Guid Id { get; set; } = Guid.NewGuid();
     public string TokenHash { get; set; } = string.Empty;
     public DateTime Expires { get; set; }
     public DateTime Created { get; set; }
