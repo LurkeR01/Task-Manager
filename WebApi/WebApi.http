@@ -1,6 +1,6 @@
-@WebApi_HostAddress = http://localhost:5145
+@WebApi_HostAddress = https://localhost:7189 
 
-POST http://localhost:5145/api/tasks
+POST https://localhost:7189/api/tasks
 Content-Type: application/json
 
 {
@@ -11,14 +11,42 @@ Content-Type: application/json
 
 ###
 
-GET http://localhost:5145/api/tasks
+GET https://localhost:7189/api/tasks
 Accept: application/json
 
 ###
 
-DELETE http://localhost:5145/api/Tasks/b4dfbf72-f4ad-4f40-a24d-efff18811818
+DELETE https://localhost:7189/api/Tasks/b4dfbf72-f4ad-4f40-a24d-efff18811818
+
+###
+
+POST  https://localhost:7189/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "LurkeR",
+  "password": "19092006"
+}
+
+###
+
+POST https://localhost:7189/api/Auth/login 
+Content-Type: application/json
+
+{
+  "username": "LurkeR",
+  "password": "19092006"
+}
+
+> {% client.global.set("accessToken", response.body.accessToken); %}
 
 ### 
 
-GET http://localhost:5145/api/Tasks/me
+GET https://localhost:7189/api/Tasks/me
+Authorization: Bearer {{accessToken}}
+
+### 
+
+POST https://localhost:7189/api/auth/refresh
+
 

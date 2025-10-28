@@ -78,15 +78,14 @@ public class AuthService
 
     public async Task<(string AccessToken, string RefreshToken)> RefreshTokenAsync(string refreshTokenHash)
     {
-        var claimsUser = _httpContextAccessor.HttpContext?.User;
-        var userId = Guid.Parse(claimsUser?.FindFirstValue(ClaimTypes.NameIdentifier));
-
-        var user = await _usersRepository.GetByIdAsync(userId);
         var refreshToken = await _refreshTokensRepository.GetByHashAsync(refreshTokenHash);
-        
         if (refreshToken == null) 
             throw new Exception("Refresh token not found");
 
+        var user = await _usersRepository.GetByIdAsync(refreshToken.UserId);
+        if (user == null) 
+            throw new Exception("User not found");
+        
         string newAccessToken = GenerateAccessToken(user);
         
         if (refreshToken.Revoked != null || refreshToken.Expires < DateTime.UtcNow)
@@ -98,9 +97,9 @@ public class AuthService
             
             var newRefreshToken = new RefreshToken
             {
-                TokenHash = refreshTokenHash,
+                TokenHash = newRefreshTokenHash,
                 Created = DateTime.UtcNow,
-                UserId = userId,
+                UserId = refreshToken.UserId,
                 Revoked = null,
                 Expires = DateTime.UtcNow.AddDays(7),
             };
