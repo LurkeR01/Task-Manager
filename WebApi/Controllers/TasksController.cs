@@ -1,8 +1,10 @@
+using System.Security.Claims;
 using Application.Services;
 using Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.JsonWebTokens;
 using WebApi.DTOs;
 
 namespace WebApi.Controllers
@@ -17,50 +19,79 @@ namespace WebApi.Controllers
         {
             _service = service;
         }
-
+        
+        [Authorize]
         [HttpGet]
-        public async Task<IActionResult> GetAsync() => Ok(await _service.GetAllAsync());
-
+        public async Task<IActionResult> GetAsync()
+        {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Guid.TryParse(userIdClaim, out var userId);
+            
+            return Ok(await _service.GetAllAsync(userId));
+        }
+    
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetAsync(Guid id) {
-             var task = await _service.GetByIdAsync(id);
-             if (task == null) return NotFound();
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Guid.TryParse(userIdClaim, out var userId);
+            
+            var task = await _service.GetByIdAsync(id, userId);
              
-             return Ok(task);
+            return Ok(task);
         }
         
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> AddAsync([FromBody] CreateTaskDto dto)
         {
-            await _service.AddAsync(dto.Title, dto.Description, dto.DueDate);
-            return Ok();
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Console.WriteLine("USER ID" + userIdClaim);
+            Guid.TryParse(userIdClaim, out var userId);
+            try
+            {
+                await _service.AddAsync(dto.Title, dto.Description, dto.DueDate, userId);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
-
+        
+        [Authorize]
         [HttpPatch("{id}")]
         public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] UpdateTaskDto dto)
         {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Guid.TryParse(userIdClaim, out var userId);
+            
             try
             {
-                await _service.UpdateAsync(id, dto.Title, dto.Description, dto.DueDate, dto.IsDone);
+                await _service.UpdateAsync(id, userId, dto.Title, dto.Description, dto.DueDate, dto.IsDone);
                 return Ok();
             }
-            catch (ArgumentException)
+            catch (Exception ex)
             {
-                return NotFound();
+                return BadRequest(ex.Message);
             }
         }
-
+        
+        [Authorize]
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAsync(Guid id)
+        public async Task<IActionResult> DeleteAsync(Guid taskItemId)
         {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Guid.TryParse(userIdClaim, out var userId);
+            
             try
             {
-                await _service.DeleteAsync(id);
+                await _service.DeleteAsync(taskItemId, userId);
                 return Ok();
             }
-            catch (ArgumentException)
+            catch (Exception ex)
             {
-                return NotFound();
+                return BadRequest(ex.Message);
             }
         }
         

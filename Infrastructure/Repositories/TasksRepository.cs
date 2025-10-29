@@ -14,18 +14,19 @@ public class TasksRepository : ITasksRepository
         _dbContext = context;
     }
 
-    public async Task<IEnumerable<TaskItem>> GetAllAsync()
+    public async Task<IEnumerable<TaskItem>> GetAllByUserIdAsync(Guid userId)
     {
         return await _dbContext.TaskItems
             .AsNoTracking()
+            .Where(t => t.UserId == userId)
             .ToListAsync();
     }
 
-    public async Task<TaskItem> GetByIdAsync(Guid id)
+    public async Task<TaskItem> GetOneByUserIdAsync(Guid taskItemId, Guid userId)
     {
         return await _dbContext.TaskItems
             .AsNoTracking()
-            .FirstOrDefaultAsync(t => t.Id == id);
+            .FirstOrDefaultAsync(t => t.Id == taskItemId && t.UserId == userId);
     }
 
     public async Task AddAsync(TaskItem newTask) {
