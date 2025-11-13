@@ -46,8 +46,8 @@ namespace WebApi.Controllers
         public async Task<IActionResult> AddAsync([FromBody] CreateTaskDto dto)
         {
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            Console.WriteLine("USER ID" + userIdClaim);
             Guid.TryParse(userIdClaim, out var userId);
+            
             try
             {
                 await _service.AddAsync(dto.Title, dto.Description, dto.DueDate, userId);
@@ -82,6 +82,8 @@ namespace WebApi.Controllers
         public async Task<IActionResult> DeleteAsync(Guid taskItemId)
         {
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Console.WriteLine("USER ID" + userIdClaim);
+            
             Guid.TryParse(userIdClaim, out var userId);
             
             try

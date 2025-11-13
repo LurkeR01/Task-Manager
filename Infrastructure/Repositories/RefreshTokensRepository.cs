@@ -24,7 +24,6 @@ public class RefreshTokensRepository : IRefreshTokensRepository
     public async Task<RefreshToken?> GetByHashAsync(string hash)
     {
         return await _dbContext.RefreshTokens
-            .AsNoTracking()
             .SingleOrDefaultAsync(rt => rt.TokenHash == hash);
     }
     

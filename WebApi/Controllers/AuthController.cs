@@ -20,8 +20,15 @@ namespace WebApi.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> RegisterAsync([FromBody] UserDto dto)
         {
-            await _authService.RegisterAsync(dto.Username, dto.Password);
-            return Ok();
+            try
+            {
+                await _authService.RegisterAsync(dto.Username, dto.Password);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPost("login")]
@@ -46,6 +53,20 @@ namespace WebApi.Controllers
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);   
+            }
+        }
+
+        [HttpPost("logout")]
+        public async Task<IActionResult> LogoutAsync()
+        {
+            RefreshDto dto = new RefreshDto { RefreshToken = Request.Cookies["refreshToken"] };
+            try
+            {
+                await _authService.LogoutAsync(dto.RefreshToken);
+                return Ok();
+            } catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
         }
 

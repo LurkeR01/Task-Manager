@@ -25,7 +25,6 @@ public class TasksRepository : ITasksRepository
     public async Task<TaskItem> GetOneByUserIdAsync(Guid taskItemId, Guid userId)
     {
         return await _dbContext.TaskItems
-            .AsNoTracking()
             .FirstOrDefaultAsync(t => t.Id == taskItemId && t.UserId == userId);
     }
 

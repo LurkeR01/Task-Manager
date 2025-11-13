@@ -17,9 +17,9 @@ public class AuthService
     private readonly IConfiguration _config;
     private readonly IHttpContextAccessor _httpContextAccessor;
 
-    
+
     public AuthService(
-        IUsersRepository usersRepository, 
+        IUsersRepository usersRepository,
         IRefreshTokensRepository refreshTokensRepository,
         IConfiguration config,
         IHttpContextAccessor httpContextAccessor)
@@ -30,10 +30,10 @@ public class AuthService
         _httpContextAccessor = httpContextAccessor;
     }
 
-    
+
     public async Task RegisterAsync(string username, string password)
     {
-        if (_usersRepository.GetByUsernameAsync(username).GetAwaiter().GetResult() != null) 
+        if (await _usersRepository.GetByUsernameAsync(username) != null)
             throw new Exception("Username is already taken");
 
         User newUser = new User
@@ -41,21 +41,24 @@ public class AuthService
             Username = username,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
         };
-        
+
         await _usersRepository.AddAsync(newUser);
         await _usersRepository.SaveChangesAsync();
     }
 
-    
+
     public async Task<(string AccessToken, string RefreshToken)> LoginAsync(string username, string password)
     {
+        if (username == string.Empty || password == string.Empty)
+            throw new Exception("Fill in username and password");
+
         var user = await _usersRepository.GetByUsernameAsync(username);
         if (user == null)
             throw new Exception("Username not found");
-        
+
         if (BCrypt.Net.BCrypt.Verify(password, user.PasswordHash) == false)
             throw new Exception("Password is incorrect");
-        
+
         string accessToken = GenerateAccessToken(user);
         string refresh = GenerateRefreshToken();
         string refreshTokenHash = ComputeHash(refresh);
@@ -68,52 +71,66 @@ public class AuthService
             Revoked = null,
             Expires = DateTime.UtcNow.AddDays(7),
         };
-        
+
         await _refreshTokensRepository.AddAsync(refreshToken);
         await _refreshTokensRepository.SaveChangesAsync();
-        
+
         return (accessToken, refreshTokenHash);
+    }
+
+
+    public async Task LogoutAsync(string refreshTokenHash)
+    {
+        var refreshToken = await _refreshTokensRepository.GetByHashAsync(refreshTokenHash);
+
+        if (refreshToken == null)
+            throw new Exception("Refresh token not found");
+
+        refreshToken.Revoked = DateTime.UtcNow;
+        await _refreshTokensRepository.SaveChangesAsync();
     }
 
 
     public async Task<(string AccessToken, string RefreshToken)> RefreshTokenAsync(string refreshTokenHash)
     {
         var refreshToken = await _refreshTokensRepository.GetByHashAsync(refreshTokenHash);
-        if (refreshToken == null) 
+        if (refreshToken == null)
             throw new Exception("Refresh token not found");
 
         var user = await _usersRepository.GetByIdAsync(refreshToken.UserId);
-        if (user == null) 
+        if (user == null)
             throw new Exception("User not found");
-        
+
+        if (refreshToken.Revoked != null)
+            throw new Exception("Refresh token is revoked");
+
+        if (refreshToken.Expires < DateTime.UtcNow)
+            throw new Exception("Refresh token is expired");
+
         string newAccessToken = GenerateAccessToken(user);
-        
-        if (refreshToken.Revoked != null || refreshToken.Expires < DateTime.UtcNow)
+
+
+        await _refreshTokensRepository.RemoveAsync(refreshToken);
+
+        string newRefresh = GenerateRefreshToken();
+        string newRefreshTokenHash = ComputeHash(newRefresh);
+
+        var newRefreshToken = new RefreshToken
         {
-            await _refreshTokensRepository.RemoveAsync(refreshToken);
+            TokenHash = newRefreshTokenHash,
+            Created = DateTime.UtcNow,
+            UserId = refreshToken.UserId,
+            Revoked = null,
+            Expires = DateTime.UtcNow.AddDays(7),
+        };
 
-            string newRefresh = GenerateRefreshToken();
-            string newRefreshTokenHash = ComputeHash(newRefresh);
-            
-            var newRefreshToken = new RefreshToken
-            {
-                TokenHash = newRefreshTokenHash,
-                Created = DateTime.UtcNow,
-                UserId = refreshToken.UserId,
-                Revoked = null,
-                Expires = DateTime.UtcNow.AddDays(7),
-            };
-            
-            await _refreshTokensRepository.AddAsync(newRefreshToken);
-            await _refreshTokensRepository.SaveChangesAsync();
-            
-            return (newAccessToken, newRefreshTokenHash);
-        }
-        
-        return (newAccessToken, refreshTokenHash);
-    } 
+        await _refreshTokensRepository.AddAsync(newRefreshToken);
+        await _refreshTokensRepository.SaveChangesAsync();
 
-    
+        return (newAccessToken, newRefreshTokenHash);
+    }
+
+
     private string GenerateAccessToken(User user)
     {
         var claims = new List<Claim>
@@ -130,7 +147,7 @@ public class AuthService
             issuer: _config["Jwt:Issuer"],
             audience: _config["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(15),
+            expires: DateTime.UtcNow.AddSeconds(15),
             signingCredentials: creds
         );
         
