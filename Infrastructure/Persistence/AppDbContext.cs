@@ -8,6 +8,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<TaskItem> TaskItems => Set<TaskItem>();
     public DbSet<User> Users => Set<User>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<Board> Boards => Set<Board>();
+    public DbSet<Column> Columns => Set<Column>();
+    public DbSet<BoardUser> BoardUsers => Set<BoardUser>();
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

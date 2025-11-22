@@ -10,9 +10,9 @@ public class UserConfigurations : IEntityTypeConfiguration<User>
     {
         builder.HasKey(u => u.Id);
         builder.Property(u => u.Username).IsRequired().HasMaxLength(50);
-        builder.HasMany(u => u.TaskItems)
-            .WithOne(t => t.User)
-            .HasForeignKey(t => t.UserId)
+        builder.HasMany(u => u.BoardUsers)
+            .WithOne(bu => bu.User)
+            .HasForeignKey(b => b.UserId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

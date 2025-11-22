@@ -6,7 +6,13 @@ public class TaskItem
     public string Title { get; set; } = string.Empty;
     public string? Description { get; set; } = string.Empty;
     public DateTime? DueDate { get; set; }
-    public bool IsDone { get; set; }
+    
+    [Obsolete]
+    public bool IsDone { get; set; } = false;
+    
+    [Obsolete]
     public Guid UserId { get; set; }
-    public User User { get; set; } = null!;
+    
+    public Guid ColumnId { get; set; }
+    public Column Column { get; set; } = null!;
 }

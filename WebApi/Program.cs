@@ -14,12 +14,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection"),
-        b => b.MigrationsAssembly("WebApi"))
+        b => b.MigrationsAssembly("Infrastructure"))
 );
 
 builder.Services.AddScoped<ITasksRepository, TasksRepository>();
 builder.Services.AddScoped<IRefreshTokensRepository, RefreshTokensRepository>();
 builder.Services.AddScoped<IUsersRepository, UsersRepository>();
+builder.Services.AddScoped<IBoardsRepository, BoardsRepository>();
+builder.Services.AddScoped<BoardsService>();
 builder.Services.AddScoped<TasksService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddControllers();
