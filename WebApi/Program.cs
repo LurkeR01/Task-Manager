@@ -7,6 +7,7 @@ using Infrastructure.Persistence;
 using Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,12 +22,16 @@ builder.Services.AddScoped<ITasksRepository, TasksRepository>();
 builder.Services.AddScoped<IRefreshTokensRepository, RefreshTokensRepository>();
 builder.Services.AddScoped<IUsersRepository, UsersRepository>();
 builder.Services.AddScoped<IBoardsRepository, BoardsRepository>();
+builder.Services.AddScoped<IColumnsRepository, ColumnsRepository>();
+builder.Services.AddScoped<IUnitOfWork, EfUnitOfWork>();
+
 builder.Services.AddScoped<BoardsService>();
+builder.Services.AddScoped<ColumnsService>();
 builder.Services.AddScoped<TasksService>();
 builder.Services.AddScoped<AuthService>();
-builder.Services.AddControllers();
 
 builder.Services.AddControllers();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 

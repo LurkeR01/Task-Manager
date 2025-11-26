@@ -30,6 +30,11 @@ public class BoardsRepository : IBoardsRepository
         return boards;
     }
 
+    public async Task<Board> GetOneByUserIdAsync(Guid boardId, Guid ownerId)
+    {
+        return await _dbContext.Boards.FirstOrDefaultAsync(b => b.Id == boardId && b.OwnerId == ownerId);
+    }
+
     public async Task AddAsync(Board newBoard)
     {
         await _dbContext.Boards.AddAsync(newBoard);
@@ -44,9 +49,9 @@ public class BoardsRepository : IBoardsRepository
         await _dbContext.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(Board deletedBoard)
+    public async Task DeleteAsync(Guid boardId)
     {
-        await _dbContext.Boards.Where(b => b.Id == deletedBoard.Id)
+        await _dbContext.Boards.Where(b => b.Id == boardId)
             .ExecuteDeleteAsync();
     }
 }

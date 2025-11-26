@@ -8,5 +8,5 @@ public interface ITasksRepository
     Task<TaskItem> GetOneByUserIdAsync(Guid taskItemId, Guid userId);
     Task AddAsync(TaskItem newTask);
     Task UpdateAsync(TaskItem updatedTask);
-    Task DeleteAsync(TaskItem deletedTask);
+    Task DeleteAsync(Guid taskItemId);
 }

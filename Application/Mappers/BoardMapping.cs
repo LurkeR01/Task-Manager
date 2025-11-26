@@ -5,9 +5,9 @@ namespace WebApi.Mappers;
 
 public static class BoardMapping
 {
-    public static BoardDto ToResponse(this Board b)
+    public static ResponseBoardDto ToResponse(this Board b)
     {
-        return new BoardDto
+        return new ResponseBoardDto
         {
             Id = b.Id,
             Title = b.Title,
@@ -26,7 +26,7 @@ public static class BoardMapping
                 Id = c.Id,
                 Name = c.Name,
                 Order = c.Order,
-                Tasks = c.TaskItems.OrderBy(t => t.IsDone).Select(t => new CreateTaskDto
+                Tasks = c.TaskItems.OrderBy(t => t.IsDone).Select(t => new TaskItemDto
                 {
                     Id = t.Id,
                     Title = t.Title,

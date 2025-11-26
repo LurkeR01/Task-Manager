@@ -2,9 +2,9 @@
 
 public class Board
 {
-    public Guid Id { get; set; }
-    public string Title { get; set; }
-    public Guid OwnerId { get; set; }
+    public Guid Id { get; set; } = Guid.NewGuid();
+    public string Title { get; set; }  = string.Empty;
+    public Guid OwnerId { get; set; } = Guid.Empty;
     public User Owner { get; set; } = null!;
     
     public List<Column> Columns { get; set; } = new List<Column>();

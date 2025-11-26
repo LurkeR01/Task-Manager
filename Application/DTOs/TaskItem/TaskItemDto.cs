@@ -1,6 +1,6 @@
 ﻿namespace WebApi.DTOs;
 
-public class CreateTaskDto
+public class TaskItemDto
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     public string Title { get; set; } = string.Empty;

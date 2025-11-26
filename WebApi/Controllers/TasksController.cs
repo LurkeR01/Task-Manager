@@ -32,7 +32,7 @@ namespace WebApi.Controllers
     
         [Authorize]
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetAsync(Guid id) {
+        public async Task<IActionResult> GetByIdAsync(Guid id) {
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             Guid.TryParse(userIdClaim, out var userId);
             
@@ -43,14 +43,14 @@ namespace WebApi.Controllers
         
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> AddAsync([FromBody] CreateTaskDto dto)
+        public async Task<IActionResult> AddAsync([FromBody] TaskItemDto itemDto)
         {
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             Guid.TryParse(userIdClaim, out var userId);
             
             try
             {
-                await _service.AddAsync(dto.Title, dto.Description, dto.DueDate, userId);
+                await _service.AddAsync(itemDto.Title, itemDto.Description, itemDto.DueDate, userId);
                 return Ok();
             }
             catch (Exception ex)
@@ -79,17 +79,15 @@ namespace WebApi.Controllers
         
         [Authorize]
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAsync(Guid taskItemId)
+        public async Task<IActionResult> DeleteAsync(Guid id)
         {
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            Console.WriteLine("USER ID" + userIdClaim);
-            
             Guid.TryParse(userIdClaim, out var userId);
             
             try
             {
-                await _service.DeleteAsync(taskItemId, userId);
-                return Ok();
+                await _service.DeleteAsync(id, userId);
+                return NoContent();
             }
             catch (Exception ex)
             {

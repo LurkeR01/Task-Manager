@@ -1,6 +1,6 @@
 ﻿namespace WebApi.DTOs;
 
-public class BoardDto
+public class ResponseBoardDto
 {
     public Guid Id { get; set; } = new Guid();
     public string Title { get; set; } = string.Empty;

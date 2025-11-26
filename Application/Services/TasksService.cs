@@ -42,10 +42,5 @@ public class TasksService
         await _tasksRepository.UpdateAsync(task);
     }
 
-    public async Task DeleteAsync(Guid taskId, Guid userId)
-    {
-        var task = await _tasksRepository.GetOneByUserIdAsync(taskId, userId) ?? throw new Exception("Task not found");
-        
-        await _tasksRepository.DeleteAsync(task);
-    }
+    public async Task DeleteAsync(Guid taskId, Guid userId) => await _tasksRepository.DeleteAsync(taskId);
 }

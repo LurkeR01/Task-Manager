@@ -43,10 +43,10 @@ public class TasksRepository : ITasksRepository
                 .SetProperty(s => s.IsDone, updatedTask.IsDone));
     }
 
-    public async Task DeleteAsync(TaskItem deletedTask)
+    public async Task DeleteAsync(Guid taskItemId)
     {
         await _dbContext.TaskItems
-            .Where(t => t.Id == deletedTask.Id)
+            .Where(t => t.Id == taskItemId)
             .ExecuteDeleteAsync();
     }
 }
