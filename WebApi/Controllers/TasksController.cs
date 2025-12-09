@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.JsonWebTokens;
-using WebApi.DTOs;
+using WebApi.DTOs.TaskItem;
 
 namespace WebApi.Controllers
 {

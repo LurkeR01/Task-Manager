@@ -1,5 +1,8 @@
 ﻿using Domain;
-using WebApi.DTOs;
+using WebApi.DTOs.Board;
+using WebApi.DTOs.Column;
+using WebApi.DTOs.TaskItem;
+using WebApi.DTOs.User;
 
 namespace WebApi.Mappers;
 
@@ -11,7 +14,7 @@ public static class BoardMapping
         {
             Id = b.Id,
             Title = b.Title,
-            Owner = new UserDto
+            Owner = new UserResponseDto
             {
                 Id = b.Owner.Id,
                 Username = b.Owner.Username

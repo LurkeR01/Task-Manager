@@ -1,7 +1,5 @@
 ﻿using System.Collections;
 using Domain;
-using WebApi.DTOs;
-using WebApi.Mappers;
 
 namespace Application.Services;
 
@@ -22,10 +20,10 @@ public class BoardsService
         _uof = uof;
     }
 
-    public async Task<IEnumerable<ResponseBoardDto>> GetAllAsync(Guid userId)
+    public async Task<IEnumerable<Board>> GetAllAsync(Guid userId)
     {
         var boards  = await _boardsRepository.GetAllByUserIdAsync(userId);
-        return boards.Select(b => b.ToResponse()).ToList();
+        return boards;
     }
     
     public async Task<Board> GetByIdAsync(Guid boardId, Guid userId) => await _boardsRepository.GetOneByUserIdAsync(boardId, userId);
@@ -69,6 +67,16 @@ public class BoardsService
             await _uof.RollbackAsync();
             throw;
         }
+    }
+
+    public async Task<Board> UpdateAsync(Guid boardId, Guid ownerId, string title)
+    {
+        var board = await _boardsRepository.GetOneByUserIdAsync(boardId, ownerId) ?? throw new NullReferenceException("Board not found");
+        
+        board.Title = title;
+        
+        await _boardsRepository.UpdateAsync(board);
+        return board;
     }
 
     public async Task DeleteAsync(Guid boardId) =>  await _boardsRepository.DeleteAsync(boardId);

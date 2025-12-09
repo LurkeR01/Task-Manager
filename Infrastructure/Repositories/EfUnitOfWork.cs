@@ -6,17 +6,17 @@ namespace Infrastructure.Repositories;
 
 public class EfUnitOfWork : IUnitOfWork
 {
-    private readonly AppDbContext _context;
+    private readonly AppDbContext _dbContext;
     private IDbContextTransaction _transaction;
 
     public EfUnitOfWork(AppDbContext context)
     {
-        _context = context;
+        _dbContext = context;
     }
 
     public async Task BeginTransactionAsync()
     {
-        _transaction = await _context.Database.BeginTransactionAsync();
+        _transaction = await _dbContext.Database.BeginTransactionAsync();
     }
 
     public async Task CommitAsync()

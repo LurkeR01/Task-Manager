@@ -32,7 +32,11 @@ public class BoardsRepository : IBoardsRepository
 
     public async Task<Board> GetOneByUserIdAsync(Guid boardId, Guid ownerId)
     {
-        return await _dbContext.Boards.FirstOrDefaultAsync(b => b.Id == boardId && b.OwnerId == ownerId);
+        return await _dbContext.Boards
+            .Include(b => b.Owner)
+            .Include(b => b.BoardUsers).ThenInclude(bu => bu.User)
+            .Include(b => b.Columns).ThenInclude(c => c.TaskItems)
+            .FirstOrDefaultAsync(b => b.Id == boardId && b.OwnerId == ownerId);
     }
 
     public async Task AddAsync(Board newBoard)

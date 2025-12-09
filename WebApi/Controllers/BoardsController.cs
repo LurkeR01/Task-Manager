@@ -5,7 +5,8 @@ using Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using WebApi.DTOs;
+using WebApi.DTOs.Board;
+using WebApi.Mappers;
 
 namespace WebApi.Controllers
 {
@@ -22,12 +23,14 @@ namespace WebApi.Controllers
 
         [Authorize]
         [HttpGet]
-        public async Task<IActionResult> GetAsync()
+        public async Task<IActionResult> GetAllAsync()
         {
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             Guid.TryParse(userIdClaim, out var userId);
-
-            return Ok(await _boardsService.GetAllAsync(userId));
+            
+            var boards = await _boardsService.GetAllAsync(userId);
+            
+            return Ok(boards.Select(b => b.ToResponse()).ToList());
         }
 
         [Authorize]
@@ -53,12 +56,32 @@ namespace WebApi.Controllers
                 return CreatedAtRoute(
                     "GetBoard",
                     new { id = createdBoard.Id },
-                    createdBoard);
+                    createdBoard.ToResponse());
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             } 
+        }
+
+        [Authorize]
+        [HttpPatch("{id}")]
+        public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] CreateBoardDto boardDto)
+        {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Guid.TryParse(userIdClaim, out var userId);
+            
+            try
+            {
+                var updatedBoard = await _boardsService.UpdateAsync(id, userId, boardDto.Title);
+                return CreatedAtRoute(
+                    "GetBoard",
+                    new { id = updatedBoard.Id },
+                    updatedBoard.ToResponse());
+            } catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [Authorize]

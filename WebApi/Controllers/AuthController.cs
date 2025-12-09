@@ -2,7 +2,8 @@ using Application.Services;
 using Azure.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using WebApi.DTOs;
+using WebApi.DTOs.Token;
+using WebApi.DTOs.User;
 
 namespace WebApi.Controllers
 {

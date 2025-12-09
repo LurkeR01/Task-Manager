@@ -1,4 +1,6 @@
-﻿namespace WebApi.DTOs;
+﻿using WebApi.DTOs.TaskItem;
+
+namespace WebApi.DTOs.Column;
 
 public class ColumnDto
 {
