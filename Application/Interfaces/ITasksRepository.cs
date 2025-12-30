@@ -4,9 +4,8 @@ namespace Application;
 
 public interface ITasksRepository
 {
-    Task<IEnumerable<TaskItem>> GetAllByUserIdAsync(Guid userId);
-    Task<TaskItem> GetOneByUserIdAsync(Guid taskItemId, Guid userId);
+    Task<TaskItem> GetOneByColumnIdAsync(Guid taskItemId, Guid columnId);
     Task AddAsync(TaskItem newTask);
     Task UpdateAsync(TaskItem updatedTask);
-    Task DeleteAsync(Guid taskItemId);
+    Task DeleteAsync(TaskItem taskItem, Guid ownerId);
 }

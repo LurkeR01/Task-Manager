@@ -11,6 +11,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Board> Boards => Set<Board>();
     public DbSet<Column> Columns => Set<Column>();
     public DbSet<BoardUser> BoardUsers => Set<BoardUser>();
+    public DbSet<BoardInvite> BoardInvites => Set<BoardInvite>();
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

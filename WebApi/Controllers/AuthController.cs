@@ -23,7 +23,7 @@ namespace WebApi.Controllers
         {
             try
             {
-                await _authService.RegisterAsync(dto.Username, dto.Password);
+                await _authService.RegisterAsync(dto.Username, dto.Email, dto.Password);
                 return Ok();
             }
             catch (Exception ex)
@@ -37,7 +37,7 @@ namespace WebApi.Controllers
         {
             try
             {
-                (string accessToken, string refreshToken) = await _authService.LoginAsync(dto.Username, dto.Password);
+                (string accessToken, string refreshToken) = await _authService.LoginAsync(dto.Email, dto.Password);
                 
                 var cookiesOptions = new CookieOptions
                 {

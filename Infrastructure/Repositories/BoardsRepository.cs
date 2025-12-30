@@ -15,11 +15,14 @@ public class BoardsRepository : IBoardsRepository
         _dbContext = dbContext;
     }
     
-    public async Task<IEnumerable<Board>> GetAllByUserIdAsync(Guid userId)
+    public async Task<Board> GetByIdAsync(Guid boardId) => 
+        await _dbContext.Boards.FirstOrDefaultAsync(b => b.Id == boardId);
+    
+    public async Task<IEnumerable<Board>> GetAllByUserIdAsync(Guid ownerId)
     {
         var boards = await _dbContext.Boards
-            .Where(b => b.OwnerId == userId 
-            || b.BoardUsers.Any(bu => bu.UserId == userId))
+            .Where(b => b.OwnerId == ownerId 
+            || b.BoardUsers.Any(bu => bu.UserId == ownerId))
             .Include(b => b.Owner)
             .Include(b => b.BoardUsers)
                 .ThenInclude(bu => bu.User)
@@ -47,15 +50,14 @@ public class BoardsRepository : IBoardsRepository
 
     public async Task UpdateAsync(Board updatedBoard)
     {
-        await _dbContext.Boards.Where(b => b.Id == updatedBoard.Id)
+        await _dbContext.Boards.Where(b => b.Id == updatedBoard.Id && b.OwnerId == updatedBoard.OwnerId)
             .ExecuteUpdateAsync(b => b
                 .SetProperty(s => s.Title, updatedBoard.Title));
-        await _dbContext.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(Guid boardId)
+    public async Task DeleteAsync(Guid boardId, Guid ownerId)
     {
-        await _dbContext.Boards.Where(b => b.Id == boardId)
+        await _dbContext.Boards.Where(b => b.Id == boardId && b.OwnerId == ownerId)
             .ExecuteDeleteAsync();
     }
 }

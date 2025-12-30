@@ -43,6 +43,43 @@ namespace Infrastructure.Migrations
                     b.ToTable("Boards");
                 });
 
+            modelBuilder.Entity("Domain.BoardInvite", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BoardId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("InvitedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("InvitedUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InvitedByUserId");
+
+                    b.HasIndex("InvitedUserId");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("BoardId", "InvitedUserId");
+
+                    b.ToTable("BoardInvites");
+                });
+
             modelBuilder.Entity("Domain.BoardUser", b =>
                 {
                     b.Property<Guid>("Id")
@@ -77,13 +114,13 @@ namespace Infrastructure.Migrations
                     b.Property<Guid>("BoardId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Name")
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("Order")
-                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -131,21 +168,16 @@ namespace Infrastructure.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Description")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("DueDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("IsDone")
-                        .HasColumnType("bit");
-
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -160,8 +192,9 @@ namespace Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<bool>("IsAdmin")
-                        .HasColumnType("bit");
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -173,6 +206,9 @@ namespace Infrastructure.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
 
                     b.ToTable("Users");
                 });
@@ -188,12 +224,39 @@ namespace Infrastructure.Migrations
                     b.Navigation("Owner");
                 });
 
+            modelBuilder.Entity("Domain.BoardInvite", b =>
+                {
+                    b.HasOne("Domain.Board", "Board")
+                        .WithMany("BoardInvites")
+                        .HasForeignKey("BoardId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.User", "InvitedByUser")
+                        .WithMany("SentInvites")
+                        .HasForeignKey("InvitedByUserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Domain.User", "InvitedUser")
+                        .WithMany("ReceivedInvites")
+                        .HasForeignKey("InvitedUserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Board");
+
+                    b.Navigation("InvitedByUser");
+
+                    b.Navigation("InvitedUser");
+                });
+
             modelBuilder.Entity("Domain.BoardUser", b =>
                 {
                     b.HasOne("Domain.Board", "Board")
                         .WithMany("BoardUsers")
                         .HasForeignKey("BoardId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Domain.User", "User")
@@ -242,6 +305,8 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Board", b =>
                 {
+                    b.Navigation("BoardInvites");
+
                     b.Navigation("BoardUsers");
 
                     b.Navigation("Columns");
@@ -256,7 +321,11 @@ namespace Infrastructure.Migrations
                 {
                     b.Navigation("BoardUsers");
 
+                    b.Navigation("ReceivedInvites");
+
                     b.Navigation("RefreshTokens");
+
+                    b.Navigation("SentInvites");
                 });
 #pragma warning restore 612, 618
         }

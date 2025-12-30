@@ -27,13 +27,15 @@ public static class BoardMapping
             Columns = b.Columns.OrderBy(c => c.Order).Select(c => new ColumnDto
             {
                 Id = c.Id,
-                Name = c.Name,
+                Title = c.Title,
                 Order = c.Order,
-                Tasks = c.TaskItems.OrderBy(t => t.IsDone).Select(t => new TaskItemDto
+                Tasks = c.TaskItems.Select(t => new TaskItemDto
                 {
                     Id = t.Id,
                     Title = t.Title,
                     Description = t.Description,
+                    DueDate = t.DueDate,
+                    ColumnId = t.ColumnId,
                 }).ToList()
             }).ToList()
         };

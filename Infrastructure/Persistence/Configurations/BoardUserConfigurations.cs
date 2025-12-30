@@ -16,7 +16,7 @@ public class BoardUserConfigurations : IEntityTypeConfiguration<BoardUser>
         builder.HasOne(bu => bu.Board)
             .WithMany(b => b.BoardUsers)
             .HasForeignKey(bu => bu.BoardId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
         
         builder.HasOne(bu => bu.User)
             .WithMany(u => u.BoardUsers)

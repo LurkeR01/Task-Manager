@@ -14,18 +14,10 @@ public class TasksRepository : ITasksRepository
         _dbContext = context;
     }
 
-    public async Task<IEnumerable<TaskItem>> GetAllByUserIdAsync(Guid userId)
+    public async Task<TaskItem> GetOneByColumnIdAsync(Guid taskItemId, Guid columnId)
     {
         return await _dbContext.TaskItems
-            .AsNoTracking()
-            .Where(t => t.UserId == userId)
-            .ToListAsync();
-    }
-
-    public async Task<TaskItem> GetOneByUserIdAsync(Guid taskItemId, Guid userId)
-    {
-        return await _dbContext.TaskItems
-            .FirstOrDefaultAsync(t => t.Id == taskItemId && t.UserId == userId);
+            .FirstOrDefaultAsync(t => t.Id == taskItemId && t.Column.Id == columnId);
     }
 
     public async Task AddAsync(TaskItem newTask) {
@@ -40,13 +32,13 @@ public class TasksRepository : ITasksRepository
                 .SetProperty(s => s.Title, updatedTask.Title)
                 .SetProperty(s => s.Description, updatedTask.Description)
                 .SetProperty(s => s.DueDate, updatedTask.DueDate)
-                .SetProperty(s => s.IsDone, updatedTask.IsDone));
+                .SetProperty(s => s.ColumnId, updatedTask.ColumnId));
     }
 
-    public async Task DeleteAsync(Guid taskItemId)
+    public async Task DeleteAsync(TaskItem taskItem, Guid ownerId)
     {
         await _dbContext.TaskItems
-            .Where(t => t.Id == taskItemId)
+            .Where(t => t.Id == taskItem.Id)
             .ExecuteDeleteAsync();
     }
 }

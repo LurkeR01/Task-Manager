@@ -31,14 +31,15 @@ public class AuthService
     }
 
 
-    public async Task RegisterAsync(string username, string password)
+    public async Task RegisterAsync(string username, string email, string password)
     {
-        if (await _usersRepository.GetByUsernameAsync(username) != null)
-            throw new Exception("Username is already taken");
+        if (await _usersRepository.GetByEmailAsync(email) != null)
+            throw new Exception("It seems like you have already registered with this email");
 
         User newUser = new User
         {
             Username = username,
+            Email = email,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
         };
 
@@ -47,14 +48,14 @@ public class AuthService
     }
 
 
-    public async Task<(string AccessToken, string RefreshToken)> LoginAsync(string username, string password)
+    public async Task<(string AccessToken, string RefreshToken)> LoginAsync(string email, string password)
     {
-        if (username == string.Empty || password == string.Empty)
-            throw new Exception("Fill in username and password");
+        if (email == string.Empty || password == string.Empty)
+            throw new Exception("Fill in email and password");
 
-        var user = await _usersRepository.GetByUsernameAsync(username);
+        var user = await _usersRepository.GetByEmailAsync(email);
         if (user == null)
-            throw new Exception("Username not found");
+            throw new Exception("User with this email is not found");
 
         if (BCrypt.Net.BCrypt.Verify(password, user.PasswordHash) == false)
             throw new Exception("Password is incorrect");
@@ -136,8 +137,7 @@ public class AuthService
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Name, user.Username),
-            new Claim("isAdmin", user.IsAdmin.ToString()),
+            new Claim(ClaimTypes.Name, user.Username)
         };
         
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));

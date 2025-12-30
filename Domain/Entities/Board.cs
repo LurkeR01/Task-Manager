@@ -9,5 +9,5 @@ public class Board
     
     public List<Column> Columns { get; set; } = new List<Column>();
     public ICollection<BoardUser> BoardUsers { get; set; } = new List<BoardUser>();
-    
+    public ICollection<BoardInvite> BoardInvites { get; set; } = new List<BoardInvite>();
 }

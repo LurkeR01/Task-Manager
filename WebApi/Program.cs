@@ -24,11 +24,15 @@ builder.Services.AddScoped<IUsersRepository, UsersRepository>();
 builder.Services.AddScoped<IBoardsRepository, BoardsRepository>();
 builder.Services.AddScoped<IColumnsRepository, ColumnsRepository>();
 builder.Services.AddScoped<IUnitOfWork, EfUnitOfWork>();
+builder.Services.AddScoped<IBoardUsersRepository, BoardUsersRepository>();
+builder.Services.AddScoped<IBoardInvitesRepository, BoardInvitesRepository>();
 
 builder.Services.AddScoped<BoardsService>();
 builder.Services.AddScoped<ColumnsService>();
 builder.Services.AddScoped<TasksService>();
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<InvitesService>();
+
 
 builder.Services.AddControllers();
 

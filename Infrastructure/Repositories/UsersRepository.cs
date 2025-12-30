@@ -14,6 +14,13 @@ public class UsersRepository : IUsersRepository
         _dbContext = dbContext;
     }
 
+    public async Task<User?> GetByEmailAsync(string email)
+    {
+        return await _dbContext.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Email == email);
+    }
+    
     public async Task<User?> GetByUsernameAsync(string username)
     {
         return await _dbContext.Users

@@ -10,6 +10,7 @@ public class UserConfigurations : IEntityTypeConfiguration<User>
     {
         builder.HasKey(u => u.Id);
         builder.Property(u => u.Username).IsRequired().HasMaxLength(50);
+        builder.HasIndex(u => u.Email).IsUnique();
         builder.HasMany(u => u.BoardUsers)
             .WithOne(bu => bu.User)
             .HasForeignKey(b => b.UserId)

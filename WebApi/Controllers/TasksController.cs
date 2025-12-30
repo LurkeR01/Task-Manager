@@ -9,49 +9,57 @@ using WebApi.DTOs.TaskItem;
 
 namespace WebApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/columns")]
     [ApiController]
     public class TasksController : ControllerBase
     {
-        private readonly TasksService _service;
+        private readonly TasksService _tasksService;
 
-        public TasksController(TasksService service)
+        public TasksController(TasksService tasksService)
         {
-            _service = service;
+            _tasksService = tasksService;
         }
-        
+
         [Authorize]
-        [HttpGet]
-        public async Task<IActionResult> GetAsync()
+        [HttpGet("{columnId}/tasks/{taskItemId}", Name = "GetTaskItem")]
+        public async Task<IActionResult> GetAsync(Guid columnId, Guid taskItemId)
         {
-            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            Guid.TryParse(userIdClaim, out var userId);
-            
-            return Ok(await _service.GetAllAsync(userId));
+            try
+            {
+                return Ok(await _tasksService.GetByIdAsync(taskItemId, columnId));
+            } catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
-    
-        [Authorize]
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetByIdAsync(Guid id) {
-            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            Guid.TryParse(userIdClaim, out var userId);
-            
-            var task = await _service.GetByIdAsync(id, userId);
-             
-            return Ok(task);
-        }
-        
-        [Authorize]
-        [HttpPost]
-        public async Task<IActionResult> AddAsync([FromBody] TaskItemDto itemDto)
+
+    [Authorize]
+        [HttpPost("{columnId}/tasks")]
+        public async Task<IActionResult> AddAsync(Guid columnId, [FromBody] TaskItemDto itemDto)
         {
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             Guid.TryParse(userIdClaim, out var userId);
             
             try
             {
-                await _service.AddAsync(itemDto.Title, itemDto.Description, itemDto.DueDate, userId);
-                return Ok();
+                var taskItem = await _tasksService.AddAsync(itemDto.Title, 
+                    itemDto.Description, 
+                    itemDto.DueDate, 
+                    columnId, 
+                    userId);
+                
+                TaskItemDto taskItemDto = new TaskItemDto
+                {
+                    Id = taskItem.Id,
+                    Description = taskItem.Description,
+                    DueDate = taskItem.DueDate,
+                    ColumnId = taskItem.ColumnId
+                };
+                
+                return CreatedAtRoute(
+                    "GetTaskItem",
+                    new { columnId, taskItemId = taskItemDto.Id },
+                    taskItemDto);
             }
             catch (Exception ex)
             {
@@ -60,16 +68,27 @@ namespace WebApi.Controllers
         }
         
         [Authorize]
-        [HttpPatch("{id}")]
-        public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] UpdateTaskDto dto)
+        [HttpPatch("{columnId}/tasks/{taskItemId}")]
+        public async Task<IActionResult> UpdateAsync(Guid taskItemId, Guid columnId, [FromBody] UpdateTaskDto dto)
         {
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             Guid.TryParse(userIdClaim, out var userId);
             
             try
             {
-                await _service.UpdateAsync(id, userId, dto.Title, dto.Description, dto.DueDate, dto.IsDone);
-                return Ok();
+                var taskItem = await _tasksService.UpdateAsync(taskItemId, userId, columnId, dto.Title, dto.Description, dto.DueDate, dto.ColumnId);
+                TaskItemDto taskItemDto = new TaskItemDto
+                {
+                    Id = taskItem.Id,
+                    Title = taskItem.Title,
+                    Description = taskItem.Description,
+                    DueDate = taskItem.DueDate,
+                    ColumnId = taskItem.ColumnId
+                };
+                return CreatedAtRoute(
+                    "GetTaskItem",
+                    new { columnId, taskItemId = taskItemDto.Id },
+                    taskItemDto);
             }
             catch (Exception ex)
             {
@@ -78,28 +97,21 @@ namespace WebApi.Controllers
         }
         
         [Authorize]
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAsync(Guid id)
+        [HttpDelete("{columnId}/tasks/{taskItemId}")]
+        public async Task<IActionResult> DeleteAsync(Guid taskItemId, Guid columnId)
         {
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             Guid.TryParse(userIdClaim, out var userId);
             
             try
             {
-                await _service.DeleteAsync(id, userId);
+                await _tasksService.DeleteAsync(taskItemId, columnId, userId);
                 return NoContent();
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
-        }
-        
-        [Authorize]
-        [HttpGet("me")]
-        public IActionResult GetMe()
-        {
-            return Ok(User.Identity.Name);
         }
     }
 }

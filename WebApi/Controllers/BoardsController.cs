@@ -40,7 +40,14 @@ namespace WebApi.Controllers
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             Guid.TryParse(userIdClaim, out var userId);
 
-            return Ok(await _boardsService.GetByIdAsync(id, userId));
+            try
+            {
+                return Ok(await _boardsService.GetByIdAsync(id, userId));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [Authorize]
@@ -93,7 +100,7 @@ namespace WebApi.Controllers
 
             try
             {
-                await _boardsService.DeleteAsync(id);
+                await _boardsService.DeleteAsync(id, userId);
                 return NoContent();
             }
             catch (Exception ex)
