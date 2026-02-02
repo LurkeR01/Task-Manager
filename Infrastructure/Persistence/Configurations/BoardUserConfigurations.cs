@@ -14,7 +14,7 @@ public class BoardUserConfigurations : IEntityTypeConfiguration<BoardUser>
         builder.Property(bu => bu.Role).HasConversion<int>();
         
         builder.HasOne(bu => bu.Board)
-            .WithMany(b => b.BoardUsers)
+            .WithMany(b => b.Members)
             .HasForeignKey(bu => bu.BoardId)
             .OnDelete(DeleteBehavior.Restrict);
         

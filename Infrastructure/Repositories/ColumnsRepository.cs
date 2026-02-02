@@ -14,6 +14,9 @@ public class ColumnsRepository : IColumnsRepository
         _dbContext = context;
     }
     
+    public async Task<Column> GetByIdAsync(Guid columnId)
+        => await _dbContext.Columns.FirstOrDefaultAsync(c => c.Id == columnId);
+    
     public async Task<ICollection<Column>> GetAllByBoardIdAsync(Guid boardId, Guid ownerId) => await _dbContext.Columns
         .Where(c => c.BoardId == boardId && c.Board.OwnerId == ownerId)
         .ToListAsync();

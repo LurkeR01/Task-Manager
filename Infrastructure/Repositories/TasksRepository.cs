@@ -14,10 +14,10 @@ public class TasksRepository : ITasksRepository
         _dbContext = context;
     }
 
-    public async Task<TaskItem> GetOneByColumnIdAsync(Guid taskItemId, Guid columnId)
+    public async Task<TaskItem> GetByIdAsync(Guid taskItemId)
     {
         return await _dbContext.TaskItems
-            .FirstOrDefaultAsync(t => t.Id == taskItemId && t.Column.Id == columnId);
+            .FirstOrDefaultAsync(t => t.Id == taskItemId);
     }
 
     public async Task AddAsync(TaskItem newTask) {

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using WebApi.DTOs.Column;
+using WebApi.Mappers;
 
 namespace WebApi.Controllers
 {
@@ -22,14 +23,8 @@ namespace WebApi.Controllers
         [HttpGet("{boardId}/columns/{columnId}", Name = "GetColumn")]
         public async Task<ActionResult> GetByIdAsync(Guid columnId, Guid boardId)
         {
-            try
-            {
-                return Ok(await _columnsService.GetByIdAsync(columnId, boardId));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var column = await _columnsService.GetByIdAsync(columnId, boardId);
+            return Ok(column.ToResponse());
         }
         
         
@@ -40,29 +35,16 @@ namespace WebApi.Controllers
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             Guid.TryParse(userIdClaim, out var userId);
 
-            try
-            {
-                var createdColumn = await _columnsService.AddAsync(columnDto.Title, boardId, userId);
-                ColumnDto createdColumnDto = new ColumnDto
+            var createdColumn = await _columnsService.AddAsync(columnDto.Title, boardId, userId);
+               
+            return CreatedAtRoute(
+                "GetColumn",
+                new
                 {
-                    Id = createdColumn.Id,
-                    Title = createdColumn.Title,
-                    Order = createdColumn.Order
-                };
-                
-                return CreatedAtRoute(
-                    "GetColumn",
-                    new
-                    {
-                        boardId = boardId,
-                        columnId = createdColumn.Id 
-                    },
-                    createdColumnDto);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+                    boardId = boardId,
+                    columnId = createdColumn.Id 
+                },
+                createdColumn.ToResponse());
         }
 
         [Authorize]
@@ -72,25 +54,16 @@ namespace WebApi.Controllers
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             Guid.TryParse(userIdClaim, out var userId);
 
-            try
-            {
-                var updatedColumn = await _columnsService.UpdateAsync(columnId, userId, columnDto.Title, columnDto.Order);
-                ColumnDto updatedColumnDto = new ColumnDto
+            var updatedColumn = await _columnsService.UpdateAsync(columnId, userId, boardId, columnDto.Title, columnDto.Order);
+                
+            return CreatedAtRoute(
+                "GetColumn",
+                new
                 {
-                    Id = updatedColumn.Id,
-                    Title = updatedColumn.Title,
-                    Order = updatedColumn.Order
-                };
-
-                return CreatedAtRoute(
-                    "GetColumn",
-                    new { columnId = updatedColumn.Id },
-                    updatedColumnDto);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+                    columnId = updatedColumn.Id,
+                    boardId = boardId,
+                },
+                updatedColumn.ToResponse());
         }
 
         [Authorize]
@@ -100,15 +73,8 @@ namespace WebApi.Controllers
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             Guid.TryParse(userIdClaim, out var userId);
             
-            try
-            {
-                await _columnsService.DeleteAsync(columnId, userId);
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            await _columnsService.DeleteAsync(columnId, userId, boardId);
+            return NoContent();
         }
     }
 }

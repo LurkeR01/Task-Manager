@@ -4,6 +4,8 @@ using Domain;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using System.Text;
+using Domain.Exceptions;
+using Domain.Exceptions.AuthExceptions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -15,26 +17,22 @@ public class AuthService
     private readonly IUsersRepository _usersRepository;
     private readonly IRefreshTokensRepository _refreshTokensRepository;
     private readonly IConfiguration _config;
-    private readonly IHttpContextAccessor _httpContextAccessor;
-
 
     public AuthService(
         IUsersRepository usersRepository,
         IRefreshTokensRepository refreshTokensRepository,
-        IConfiguration config,
-        IHttpContextAccessor httpContextAccessor)
+        IConfiguration config)
     {
         _usersRepository = usersRepository;
         _refreshTokensRepository = refreshTokensRepository;
         _config = config;
-        _httpContextAccessor = httpContextAccessor;
     }
 
 
     public async Task RegisterAsync(string username, string email, string password)
     {
         if (await _usersRepository.GetByEmailAsync(email) != null)
-            throw new Exception("It seems like you have already registered with this email");
+            throw new AlreadyExistsException("email");
 
         User newUser = new User
         {
@@ -51,14 +49,14 @@ public class AuthService
     public async Task<(string AccessToken, string RefreshToken)> LoginAsync(string email, string password)
     {
         if (email == string.Empty || password == string.Empty)
-            throw new Exception("Fill in email and password");
+            throw new InvalidCredentialsException();
 
         var user = await _usersRepository.GetByEmailAsync(email);
         if (user == null)
-            throw new Exception("User with this email is not found");
+            throw new NotFoundException("User with this email is not found");
 
         if (BCrypt.Net.BCrypt.Verify(password, user.PasswordHash) == false)
-            throw new Exception("Password is incorrect");
+            throw new InvalidCredentialsException();
 
         string accessToken = GenerateAccessToken(user);
         string refresh = GenerateRefreshToken();
@@ -85,7 +83,7 @@ public class AuthService
         var refreshToken = await _refreshTokensRepository.GetByHashAsync(refreshTokenHash);
 
         if (refreshToken == null)
-            throw new Exception("Refresh token not found");
+            throw new NotFoundException("Refresh token not found");
 
         refreshToken.Revoked = DateTime.UtcNow;
         await _refreshTokensRepository.SaveChangesAsync();
@@ -96,17 +94,17 @@ public class AuthService
     {
         var refreshToken = await _refreshTokensRepository.GetByHashAsync(refreshTokenHash);
         if (refreshToken == null)
-            throw new Exception("Refresh token not found");
+            throw new NotFoundException("Refresh token not found");
 
         var user = await _usersRepository.GetByIdAsync(refreshToken.UserId);
         if (user == null)
-            throw new Exception("User not found");
+            throw new NotFoundException("User not found");
 
         if (refreshToken.Revoked != null)
-            throw new Exception("Refresh token is revoked");
+            throw new InvalidRefreshTokenException("Refresh token is revoked");
 
         if (refreshToken.Expires < DateTime.UtcNow)
-            throw new Exception("Refresh token is expired");
+            throw new InvalidRefreshTokenException("Refresh token is expired");
 
         string newAccessToken = GenerateAccessToken(user);
 

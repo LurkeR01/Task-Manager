@@ -21,80 +21,53 @@ namespace WebApi.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> RegisterAsync([FromBody] UserDto dto)
         {
-            try
-            {
-                await _authService.RegisterAsync(dto.Username, dto.Email, dto.Password);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            await _authService.RegisterAsync(dto.Username, dto.Email, dto.Password);
+            return Ok();
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> LoginAsync([FromBody] UserDto dto)
         {
-            try
+            (string accessToken, string refreshToken) = await _authService.LoginAsync(dto.Email, dto.Password);
+                
+            var cookiesOptions = new CookieOptions
             {
-                (string accessToken, string refreshToken) = await _authService.LoginAsync(dto.Email, dto.Password);
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Expires = DateTimeOffset.Now.AddDays(7)
+            };
                 
-                var cookiesOptions = new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = true,
-                    SameSite = SameSiteMode.None,
-                    Expires = DateTimeOffset.Now.AddDays(7)
-                };
+            Response.Cookies.Append("refreshToken", refreshToken, cookiesOptions);
                 
-                Response.Cookies.Append("refreshToken", refreshToken, cookiesOptions);
-                
-                return Ok(new { accessToken });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);   
-            }
+            return Ok(new { accessToken });
         }
 
         [HttpPost("logout")]
         public async Task<IActionResult> LogoutAsync()
         {
             RefreshDto dto = new RefreshDto { RefreshToken = Request.Cookies["refreshToken"] };
-            try
-            {
-                await _authService.LogoutAsync(dto.RefreshToken);
-                return Ok();
-            } catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            await _authService.LogoutAsync(dto.RefreshToken);
+            return Ok();
         }
 
         [HttpPost("refresh")]
         public async Task<IActionResult> RefreshTokenAsync()
         {
             RefreshDto dto = new RefreshDto { RefreshToken = Request.Cookies["refreshToken"] };
-            try
+            (string newAccess, string newRefresh) = await _authService.RefreshTokenAsync(dto.RefreshToken);
+                
+            var cookiesOptions = new CookieOptions
             {
-                (string newAccess, string newRefresh) = await _authService.RefreshTokenAsync(dto.RefreshToken);
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Expires = DateTimeOffset.Now.AddDays(7)
+            };
                 
-                var cookiesOptions = new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = true,
-                    SameSite = SameSiteMode.None,
-                    Expires = DateTimeOffset.Now.AddDays(7)
-                };
+            Response.Cookies.Append("refreshToken", newRefresh, cookiesOptions);
                 
-                Response.Cookies.Append("refreshToken", newRefresh, cookiesOptions);
-                
-                return Ok(new { accessToken = newAccess});
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            return Ok(new { accessToken = newAccess});
         }
     }
 }

@@ -16,6 +16,9 @@ public class BoardUsersRepository: IBoardUsersRepository
     
     public async Task<BoardUser> GetByUserIdAsync(Guid userId) => 
         await _dbContext.BoardUsers.FirstOrDefaultAsync(bu => bu.UserId == userId);
+    
+    public async Task<BoardUser> GetByBoardIdAsync(Guid boardId) =>
+        await _dbContext.BoardUsers.FirstOrDefaultAsync(bu => bu.BoardId == boardId);
 
     public async Task AddBoardUserAsync(BoardUser boardUser)
     {

@@ -1,5 +1,7 @@
 ﻿using System.Collections;
+using System.Security.Authentication;
 using Domain;
+using Domain.Exceptions;
 
 namespace Application.Services;
 
@@ -29,8 +31,15 @@ public class BoardsService
         return boards;
     }
 
-    public async Task<Board> GetByIdAsync(Guid boardId, Guid userId) =>
-        await _boardsRepository.GetOneByUserIdAsync(boardId, userId) ?? throw new NullReferenceException("Board not found");
+    public async Task<Board> GetByIdAsync(Guid boardId, Guid userId)
+    {
+        var board = await _boardsRepository.GetByIdAsync(boardId) 
+            ?? throw new NotFoundException("Board not found");
+        if (await _boardUsersRepository.GetByUserIdAsync(userId) == null)
+            throw new ForbiddenException("You are not member of the board");
+
+        return board;
+    }
 
     public async Task<Board> AddAsync(string title, Guid ownerId)
     {
@@ -84,8 +93,8 @@ public class BoardsService
 
     public async Task<Board> UpdateAsync(Guid boardId, Guid ownerId, string title)
     {
-        var board = await _boardsRepository.GetOneByUserIdAsync(boardId, ownerId) ??
-                    throw new NullReferenceException("Board not found");
+        var board = await _boardsRepository.GetOneByUserIdAsync(boardId, ownerId) ?? 
+                    throw new NotFoundException("Board not found");
 
         board.Title = title;
 
@@ -95,8 +104,8 @@ public class BoardsService
 
     public async Task DeleteAsync(Guid boardId, Guid ownerId)
     {
-        var board = await _boardsRepository.GetOneByUserIdAsync(boardId, ownerId) ??
-                    throw new NullReferenceException("Board not found");
+        if(await _boardsRepository.GetOneByUserIdAsync(boardId, ownerId) == null)
+            throw new NotFoundException("Board not found");
         await _boardsRepository.DeleteAsync(boardId, ownerId);
     }
 }

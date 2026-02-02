@@ -8,6 +8,6 @@ public class Board
     public User Owner { get; set; } = null!;
     
     public List<Column> Columns { get; set; } = new List<Column>();
-    public ICollection<BoardUser> BoardUsers { get; set; } = new List<BoardUser>();
+    public ICollection<BoardUser> Members { get; set; } = new List<BoardUser>();
     public ICollection<BoardInvite> BoardInvites { get; set; } = new List<BoardInvite>();
 }

@@ -8,6 +8,7 @@ namespace WebApi.DTOs.Board;
      public Guid Id { get; set; } = new Guid();
      public string Title { get; set; } = string.Empty;
      public UserResponseDto Owner { get; set; }  = null!;
-     public List<UserDto> Users { get; set; } = new List<UserDto>();
-     public List<ColumnDto> Columns { get; set; } = new List<ColumnDto>();
+     public List<UserResponseDto> Members { get; set; } = new List<UserResponseDto>();
+     public int MembersCount { get; set; }
+     public List<ResponseColumnDto> Columns { get; set; } = new List<ResponseColumnDto>();
  }

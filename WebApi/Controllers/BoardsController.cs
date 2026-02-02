@@ -30,7 +30,7 @@ namespace WebApi.Controllers
             
             var boards = await _boardsService.GetAllAsync(userId);
             
-            return Ok(boards.Select(b => b.ToResponse()).ToList());
+            return Ok(boards.Select(b => b.ToShortResponse()).ToList());
         }
 
         [Authorize]
@@ -39,15 +39,9 @@ namespace WebApi.Controllers
         {
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             Guid.TryParse(userIdClaim, out var userId);
-
-            try
-            {
-                return Ok(await _boardsService.GetByIdAsync(id, userId));
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            
+            var board = await _boardsService.GetByIdAsync(id, userId);
+            return Ok(board.ToFullResponse());
         }
 
         [Authorize]
@@ -57,18 +51,11 @@ namespace WebApi.Controllers
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             Guid.TryParse(userIdClaim, out var userId);
 
-            try
-            {
-                var createdBoard = await _boardsService.AddAsync(boardDto.Title, userId);
-                return CreatedAtRoute(
-                    "GetBoard",
-                    new { id = createdBoard.Id },
-                    createdBoard.ToResponse());
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            } 
+            var createdBoard = await _boardsService.AddAsync(boardDto.Title, userId);
+            return CreatedAtRoute(
+                "GetBoard",
+                new { id = createdBoard.Id },
+                createdBoard.ToFullResponse());
         }
 
         [Authorize]
@@ -78,17 +65,11 @@ namespace WebApi.Controllers
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             Guid.TryParse(userIdClaim, out var userId);
             
-            try
-            {
-                var updatedBoard = await _boardsService.UpdateAsync(id, userId, boardDto.Title);
-                return CreatedAtRoute(
-                    "GetBoard",
-                    new { id = updatedBoard.Id },
-                    updatedBoard.ToResponse());
-            } catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var updatedBoard = await _boardsService.UpdateAsync(id, userId, boardDto.Title);
+            return CreatedAtRoute(
+                "GetBoard",
+                new { id = updatedBoard.Id },
+                updatedBoard.ToFullResponse());
         }
 
         [Authorize]
@@ -98,15 +79,8 @@ namespace WebApi.Controllers
             var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
             Guid.TryParse(userIdClaim, out var userId);
 
-            try
-            {
-                await _boardsService.DeleteAsync(id, userId);
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            await _boardsService.DeleteAsync(id, userId);
+            return NoContent();
         }
     }
 }

@@ -13,9 +13,6 @@ public class BoardInviteConfigurations : IEntityTypeConfiguration<BoardInvite>
         builder.Property(i => i.Role)
             .IsRequired();
 
-        builder.Property(i => i.Status)
-            .IsRequired();
-
         builder.Property(i => i.CreatedAt)
             .IsRequired();
         
@@ -37,7 +34,5 @@ public class BoardInviteConfigurations : IEntityTypeConfiguration<BoardInvite>
             .OnDelete(DeleteBehavior.NoAction);
         
         builder.HasIndex(i => new { i.BoardId, i.InvitedUserId });
-
-        builder.HasIndex(i => i.Status);
     }
 }

@@ -8,7 +8,7 @@ namespace WebApi.Mappers;
 
 public static class BoardMapping
 {
-    public static ResponseBoardDto ToResponse(this Board b)
+    public static ResponseBoardDto ToFullResponse(this Board b)
     {
         return new ResponseBoardDto
         {
@@ -19,17 +19,18 @@ public static class BoardMapping
                 Id = b.Owner.Id,
                 Username = b.Owner.Username
             },
-            Users = b.BoardUsers.Select(bu => new UserDto
+            Members = b.Members.Select(bu => new UserResponseDto
             {
                 Id = bu.User.Id,
                 Username = bu.User.Username
             }).ToList(),
-            Columns = b.Columns.OrderBy(c => c.Order).Select(c => new ColumnDto
+            MembersCount = b.Members.Count,
+            Columns = b.Columns.OrderBy(c => c.Order).Select(c => new ResponseColumnDto
             {
                 Id = c.Id,
                 Title = c.Title,
                 Order = c.Order,
-                Tasks = c.TaskItems.Select(t => new TaskItemDto
+                TaskItems = c.TaskItems.Select(t => new TaskItemDto
                 {
                     Id = t.Id,
                     Title = t.Title,
@@ -38,6 +39,21 @@ public static class BoardMapping
                     ColumnId = t.ColumnId,
                 }).ToList()
             }).ToList()
+        };
+    }
+
+    public static ResponseBoardDto ToShortResponse(this Board b)
+    {
+        return new ResponseBoardDto
+        {
+            Id = b.Id,
+            Title = b.Title,
+            Owner = new UserResponseDto
+            {
+                Id = b.Owner.Id,
+                Username = b.Owner.Username
+            },
+            MembersCount = b.Members.Count
         };
     }
 }

@@ -11,5 +11,4 @@ public class BoardInvite
     public User InvitedByUser { get; set; } = null!;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public Roles Role { get; set; }
-    public Statuses Status { get; set; } = Statuses.Pending;
 }

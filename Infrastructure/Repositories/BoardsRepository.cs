@@ -16,15 +16,21 @@ public class BoardsRepository : IBoardsRepository
     }
     
     public async Task<Board> GetByIdAsync(Guid boardId) => 
-        await _dbContext.Boards.FirstOrDefaultAsync(b => b.Id == boardId);
+        await _dbContext.Boards
+            .Include(b => b.Owner)
+            .Include(b => b.Members)
+            .ThenInclude(bu => bu.User)
+            .Include(b => b.Columns)
+            .ThenInclude(c => c.TaskItems)
+            .FirstOrDefaultAsync(b => b.Id == boardId);
     
     public async Task<IEnumerable<Board>> GetAllByUserIdAsync(Guid ownerId)
     {
         var boards = await _dbContext.Boards
             .Where(b => b.OwnerId == ownerId 
-            || b.BoardUsers.Any(bu => bu.UserId == ownerId))
+            || b.Members.Any(bu => bu.UserId == ownerId))
             .Include(b => b.Owner)
-            .Include(b => b.BoardUsers)
+            .Include(b => b.Members)
                 .ThenInclude(bu => bu.User)
             .Include(b => b.Columns)
                 .ThenInclude(c => c.TaskItems)
@@ -37,7 +43,7 @@ public class BoardsRepository : IBoardsRepository
     {
         return await _dbContext.Boards
             .Include(b => b.Owner)
-            .Include(b => b.BoardUsers).ThenInclude(bu => bu.User)
+            .Include(b => b.Members).ThenInclude(bu => bu.User)
             .Include(b => b.Columns).ThenInclude(c => c.TaskItems)
             .FirstOrDefaultAsync(b => b.Id == boardId && b.OwnerId == ownerId);
     }
