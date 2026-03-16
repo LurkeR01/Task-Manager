@@ -14,13 +14,6 @@ public class RefreshTokensRepository : IRefreshTokensRepository
         _dbContext = dbContext;
     }
 
-    public async Task<RefreshToken?> GetByIdAsync(Guid id)
-    {
-        return await _dbContext.RefreshTokens
-            .AsNoTracking()
-            .FirstOrDefaultAsync(rt => rt.Id == id);
-    }
-
     public async Task<RefreshToken?> GetByHashAsync(string hash)
     {
         return await _dbContext.RefreshTokens
@@ -34,14 +27,6 @@ public class RefreshTokensRepository : IRefreshTokensRepository
         await _dbContext.RefreshTokens
             .Where(rt => rt.Id == refreshToken.Id)
             .ExecuteDeleteAsync();
-    }
-
-    public async Task<IEnumerable<RefreshToken>> GetAllForUserAsync(Guid userId)
-    {
-        return await _dbContext.RefreshTokens
-            .AsNoTracking()
-            .Where(rt => rt.UserId == userId)
-            .ToListAsync();
     }
     
     public async Task SaveChangesAsync() => await _dbContext.SaveChangesAsync();

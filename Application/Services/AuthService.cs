@@ -53,7 +53,7 @@ public class AuthService
 
         var user = await _usersRepository.GetByEmailAsync(email);
         if (user == null)
-            throw new NotFoundException("User with this email is not found");
+            throw new InvalidCredentialsException();
 
         if (BCrypt.Net.BCrypt.Verify(password, user.PasswordHash) == false)
             throw new InvalidCredentialsException();
